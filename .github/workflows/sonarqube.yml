@@ -9,7 +9,7 @@ on:
 
 jobs:
   analyze-auth:
-    name: Analyze auth-service
+    name: Analyze innosistemas
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
