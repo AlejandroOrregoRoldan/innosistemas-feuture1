@@ -98,7 +98,7 @@ public class ProyectController {
     @DeleteMapping("/deleteProject/{proyectID}")
     @PreAuthorize("hasAuthority('delete_project')")
     @Operation(summary = "delete a project", description = "delete a project in the system")
-    public ResponseEntity<ApiResponseDto> deleteProject(@RequestParam Integer projectID){
+    public ResponseEntity<ApiResponseDto> deleteProject(@PathVariable("proyectID") Integer projectID){
         try{
             if (proyectService.deleteProject(projectID)) {
                 return ResponseEntity.status(HttpStatus.OK)
@@ -115,7 +115,7 @@ public class ProyectController {
 
     @PatchMapping("/invalidateProject/{proyectID}")
     @Operation(summary = "invalidate a project", description = "made a logic delete of the project in the system")
-    public ResponseEntity<?> invalidateProject(@RequestParam Integer projectID){
+    public ResponseEntity<?> invalidateProject(@PathVariable("proyectID") Integer projectID){
         try{
             if (proyectService.invalidateProject(projectID)) {
                 return ResponseEntity.status(HttpStatus.OK).body("Project was invalidated successfully");
@@ -128,9 +128,8 @@ public class ProyectController {
     }
 
     @GetMapping("/getProject/{id}")
-    
     @Operation(summary =  "Get a Project", description = "Retrieves a project in the system")
-    public ResponseEntity<Project> getProject(@RequestParam Integer id) {
+    public ResponseEntity<Project> getProject(@PathVariable Integer id) {
         try {
             Project project = proyectService.getProject(id);
             if (project == null) {
