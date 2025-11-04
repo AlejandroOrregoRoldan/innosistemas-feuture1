@@ -35,3 +35,17 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+
+      # --- INICIO DE CAMBIOS ---
+
+      # 1. Añadimos el paso para dar permisos de ejecución
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
+      # 2. Cambiamos el comando de ejecución
+      - name: Build and analyze repository (root)
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./mvnw -B clean verify sonar:sonar
+
+      # --- FIN DE CAMBIOS ---
