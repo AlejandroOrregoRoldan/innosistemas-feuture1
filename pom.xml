@@ -28,8 +28,18 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
-		<!-- Use maven.compiler.release to ensure consistent bytecode when building with newer JDKs -->
 		<maven.compiler.release>17</maven.compiler.release>
+
+		<sonar.projectKey>alejandroorregoroldan_innosistemas</sonar.projectKey>
+		<sonar.organization>AlejandroOrregoRoldan</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		<sonar.exclusions>
+			**/authentication/config/*,
+			**/exceptions/errors/*,
+			**/InnosistemasApplication.java,
+			**/InnosistemasApplicationTests.java
+		</sonar.exclusions>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -131,6 +141,25 @@
 				</configuration>
 			</plugin>
 
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.11</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<!-- Ensure the compiler uses Java 17 release level -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
