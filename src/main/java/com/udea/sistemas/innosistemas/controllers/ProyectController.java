@@ -28,9 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Tag(name = "Projects", description = "Endpoints for managing Projects")
 public class ProyectController {
 
-    // --- INICIO DE CORRECCIÓN SONAR (S1192) ---
     private static final String MSG_INVALID_PROJECT_DATA = "Invalid Project data";
-    // --- FIN DE CORRECCIÓN SONAR ---
 
     private final ProjectService proyectService;
     private final ProjectRepository projectRepository;
@@ -74,7 +72,7 @@ public class ProyectController {
                         .body(new ApiResponseDto("Project was created successfully", true));
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ApiResponseDto(MSG_INVALID_PROJECT_DATA, false)); // <-- CORREGIDO
+                        .body(new ApiResponseDto(MSG_INVALID_PROJECT_DATA, false));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -92,7 +90,7 @@ public class ProyectController {
                         .body(new ApiResponseDto("Project was updated successfully", true));
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ApiResponseDto(MSG_INVALID_PROJECT_DATA, false)); // <-- CORREGIDO
+                        .body(new ApiResponseDto(MSG_INVALID_PROJECT_DATA, false));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -110,7 +108,7 @@ public class ProyectController {
                         .body(new ApiResponseDto("Project was deleted successfully", true));
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ApiResponseDto(MSG_INVALID_PROJECT_DATA, false)); // <-- CORREGIDO
+                        .body(new ApiResponseDto(MSG_INVALID_PROJECT_DATA, false));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -118,19 +116,32 @@ public class ProyectController {
         }
     }
 
+    // --- INICIO DE CORRECCIÓN SONAR (S1452) ---
+    // Se cambió ResponseEntity<?> por ResponseEntity<ApiResponseDto> para ser específico
+    // y consistente con los otros endpoints.
     @PatchMapping("/invalidateProject/{proyectID}")
     @Operation(summary = "invalidate a project", description = "made a logic delete of the project in the system")
-    public ResponseEntity<?> invalidateProject(@PathVariable("proyectID") Integer projectID){
+    public ResponseEntity<ApiResponseDto> invalidateProject(@PathVariable("proyectID") Integer projectID){
         try{
             if (proyectService.invalidateProject(projectID)) {
-                return ResponseEntity.status(HttpStatus.OK).body("Project was invalidated successfully");
+
+                // Se devuelve un ApiResponseDto en lugar de un String
+                return ResponseEntity.status(HttpStatus.OK)
+                        .body(new ApiResponseDto("Project was invalidated successfully", true));
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MSG_INVALID_PROJECT_DATA); // <-- CORREGIDO
+
+                // Se devuelve un ApiResponseDto en lugar de un String
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponseDto(MSG_INVALID_PROJECT_DATA, false));
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+
+            // Se devuelve un ApiResponseDto en lugar de un String
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponseDto(e.getMessage(), false));
         }
     }
+    // --- FIN DE CORRECCIÓN SONAR ---
 
     @GetMapping("/getProject/{id}")
     @Operation(summary =  "Get a Project", description = "Retrieves a project in the system")
