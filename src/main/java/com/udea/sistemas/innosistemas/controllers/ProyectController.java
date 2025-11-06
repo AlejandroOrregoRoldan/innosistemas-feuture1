@@ -1,7 +1,7 @@
 package com.udea.sistemas.innosistemas.controllers;
 import com.udea.sistemas.innosistemas.models.dto.ApiResponseDto;
 import com.udea.sistemas.innosistemas.models.dto.CreateProjectDto;
-import com.udea.sistemas.innosistemas.models.dto.TeamDto;
+// import com.udea.sistemas.innosistemas.models.dto.TeamDto; // Import no usado, eliminado
 import com.udea.sistemas.innosistemas.models.dto.modProjectDto;
 import com.udea.sistemas.innosistemas.models.entity.Project;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +27,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/api/project")
 @Tag(name = "Projects", description = "Endpoints for managing Projects")
 public class ProyectController {
+
+    // --- INICIO DE CORRECCIÓN SONAR (S1192) ---
+    private static final String MSG_INVALID_PROJECT_DATA = "Invalid Project data";
+    // --- FIN DE CORRECCIÓN SONAR ---
+
     private final ProjectService proyectService;
     private final ProjectRepository projectRepository;
 
@@ -36,7 +41,7 @@ public class ProyectController {
     }
 
     @GetMapping("/{projectId}/users/single-team")
-    
+
     @Operation(summary =  "Get all Users in a Single Team", description = "Retrieves a list of all users in a single team for a specific project")
     public ResponseEntity<List<User>> getUsersInOneTeam(@PathVariable Integer projectId) {
         return ResponseEntity.ok(proyectService.getUsersInOneTeamByProject(projectId));
@@ -66,14 +71,14 @@ public class ProyectController {
         try{
             if (proyectService.createProject(projectDto.courseId(), projectDto.nameProject(), projectDto.descriptions())) {
                 return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new ApiResponseDto("Project was created successfully", true));
+                        .body(new ApiResponseDto("Project was created successfully", true));
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponseDto("Invalid Project data", false));
+                        .body(new ApiResponseDto(MSG_INVALID_PROJECT_DATA, false)); // <-- CORREGIDO
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponseDto("Error creating project: " + e.getMessage(), false));
+                    .body(new ApiResponseDto("Error creating project: " + e.getMessage(), false));
         }
     }
 
@@ -84,14 +89,14 @@ public class ProyectController {
         try{
             if (proyectService.updateProject(projectDto.projectId(), projectDto.courseId(), projectDto.nameProject(), projectDto.descriptions())) {
                 return ResponseEntity.status(HttpStatus.OK)
-                    .body(new ApiResponseDto("Project was updated successfully", true));
+                        .body(new ApiResponseDto("Project was updated successfully", true));
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponseDto("Invalid Project data", false));
+                        .body(new ApiResponseDto(MSG_INVALID_PROJECT_DATA, false)); // <-- CORREGIDO
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponseDto("Error updating project: " + e.getMessage(), false));
+                    .body(new ApiResponseDto("Error updating project: " + e.getMessage(), false));
         }
     }
 
@@ -102,14 +107,14 @@ public class ProyectController {
         try{
             if (proyectService.deleteProject(projectID)) {
                 return ResponseEntity.status(HttpStatus.OK)
-                    .body(new ApiResponseDto("Project was deleted successfully", true));
+                        .body(new ApiResponseDto("Project was deleted successfully", true));
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponseDto("Invalid Project data", false));
+                        .body(new ApiResponseDto(MSG_INVALID_PROJECT_DATA, false)); // <-- CORREGIDO
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponseDto("Error deleting project: " + e.getMessage(), false));
+                    .body(new ApiResponseDto("Error deleting project: " + e.getMessage(), false));
         }
     }
 
@@ -120,7 +125,7 @@ public class ProyectController {
             if (proyectService.invalidateProject(projectID)) {
                 return ResponseEntity.status(HttpStatus.OK).body("Project was invalidated successfully");
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid Project data");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MSG_INVALID_PROJECT_DATA); // <-- CORREGIDO
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
@@ -140,5 +145,5 @@ public class ProyectController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
 }
