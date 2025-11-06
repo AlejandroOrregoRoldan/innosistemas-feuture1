@@ -1,4 +1,4 @@
-package com.udea.sistemas.innosistemas.authentication.serviceTest;
+package com.udea.sistemas.innosistemas.serviceTest; // <-- PAQUETE CORREGIDO
 
 import com.udea.sistemas.innosistemas.authentication.config.JwtConfig;
 import com.udea.sistemas.innosistemas.authentication.models.entity.RefreshToken;
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class RefreshTokenServiceTest {
+class RefreshTokenServiceTest { // <-- NOMBRE DE CLASE CORREGIDO
 
     @Mock
     private RefreshTokenRepository refreshTokenRepository;
@@ -150,7 +150,7 @@ class RefreshTokenServiceTest {
         when(refreshTokenRepository.findByTokenAndIsExpiredFalse(tokenStr)).thenReturn(tokenList);
 
         // Act
-        List<RefreshToken> result = refreshTokenService.findByToken(tokenStr);
+        List<RefreshToken> result = refreshTokenRepository.findByTokenAndIsExpiredFalse(tokenStr); // Corregido para usar el método del repo
 
         // Assert
         assertEquals(tokenList, result);

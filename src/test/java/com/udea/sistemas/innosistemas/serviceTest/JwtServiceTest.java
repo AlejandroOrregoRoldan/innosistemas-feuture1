@@ -1,4 +1,4 @@
-package com.udea.sistemas.innosistemas.authentication.serviceTest;
+package com.udea.sistemas.innosistemas.serviceTest;
 
 import com.udea.sistemas.innosistemas.authentication.config.JwtConfig;
 import com.udea.sistemas.innosistemas.authentication.service.JwtService;

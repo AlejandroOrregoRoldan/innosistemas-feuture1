@@ -1,10 +1,11 @@
-package com.udea.sistemas.innosistemas.authentication.serviceTest;
+package com.udea.sistemas.innosistemas.serviceTest; // <-- 1. PAQUETE CORREGIDO
 
 import com.udea.sistemas.innosistemas.authentication.models.dto.LoginDto;
 import com.udea.sistemas.innosistemas.authentication.models.dto.TokenResponseDto;
 import com.udea.sistemas.innosistemas.authentication.models.entity.RefreshToken;
 import com.udea.sistemas.innosistemas.authentication.service.AuthService;
 import com.udea.sistemas.innosistemas.authentication.service.JwtService;
+// 2. IMPORT CORREGIDO (apunta al servicio real, NO al test)
 import com.udea.sistemas.innosistemas.authentication.service.RefreshTokenService;
 import com.udea.sistemas.innosistemas.models.entity.Role;
 import com.udea.sistemas.innosistemas.models.entity.User;
