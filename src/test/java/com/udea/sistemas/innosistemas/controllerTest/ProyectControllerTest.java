@@ -40,7 +40,7 @@ class ProyectControllerTest {
     @InjectMocks
     private ProyectController proyectController;
 
-    // --- Pruebas de cobertura de lógica principal (77.8%) ---
+    // --- Pruebas de cobertura de lógica principal ---
 
     @Test
     void testGetProject_Success() throws Exception {
@@ -231,14 +231,12 @@ class ProyectControllerTest {
     @Test
     void testGetAllProjects_Exception() {
         // Arrange
-        // Simula un error de base de datos
         when(projectRepository.findAll()).thenThrow(new RuntimeException("Error simulado de BD"));
 
         // Act
         ResponseEntity<List<ProjectDto>> response = proyectController.getAllProjects();
 
         // Assert
-        // Verifica que el catch funcionó y devolvió un INTERNAL_SERVER_ERROR
         assertNotNull(response);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
@@ -247,8 +245,6 @@ class ProyectControllerTest {
     void testCreateProject_Exception() {
         // Arrange
         CreateProjectDto projectDto = new CreateProjectDto("Proyecto Excepcion", "Desc...", 101);
-
-        // Simula un error inesperado en la lógica del servicio
         when(proyectService.createProject(anyInt(), anyString(), anyString()))
                 .thenThrow(new RuntimeException("Error simulado de servicio"));
 
@@ -256,7 +252,6 @@ class ProyectControllerTest {
         ResponseEntity<ApiResponseDto> response = proyectController.createProject(projectDto);
 
         // Assert
-        // Verifica que el catch funcionó y devolvió el DTO de error
         assertNotNull(response);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals(false, response.getBody().success());
@@ -266,15 +261,65 @@ class ProyectControllerTest {
     @Test
     void testGetProject_Exception() {
         // Arrange
-        // Simula un error al buscar un proyecto
         when(proyectService.getProject(1)).thenThrow(new RuntimeException("Error simulado de servicio"));
 
         // Act
         ResponseEntity<Project> response = proyectController.getProject(1);
 
         // Assert
-        // Verifica que el catch funcionó
         assertNotNull(response);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    // --- PRUEBAS ADICIONALES PARA LOS CATCH FALTANTES ---
+
+    @Test
+    void testUpdateProject_Exception() {
+        // Arrange
+        modProjectDto dto = new modProjectDto(1, 101, "Actualizado", "Desc...");
+        when(proyectService.updateProject(anyInt(), anyInt(), anyString(), anyString()))
+                .thenThrow(new RuntimeException("Error simulado al actualizar"));
+
+        // Act
+        ResponseEntity<ApiResponseDto> response = proyectController.updateProject(dto);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals(false, response.getBody().success());
+        assertEquals("Error updating project: Error simulado al actualizar", response.getBody().message());
+    }
+
+    @Test
+    void testDeleteProject_Exception() {
+        // Arrange
+        when(proyectService.deleteProject(1))
+                .thenThrow(new RuntimeException("Error simulado al borrar"));
+
+        // Act
+        ResponseEntity<ApiResponseDto> response = proyectController.deleteProject(1);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals(false, response.getBody().success());
+        assertEquals("Error deleting project: Error simulado al borrar", response.getBody().message());
+    }
+
+    @Test
+    void testInvalidateProject_Exception() {
+        // Arrange
+        when(proyectService.invalidateProject(1))
+                .thenThrow(new RuntimeException("Error simulado al invalidar"));
+
+        // Act
+        ResponseEntity<ApiResponseDto> response = proyectController.invalidateProject(1);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals(false, response.getBody().success());
+        // El mensaje de error de este catch es genérico (e.getMessage())
+        assertEquals("Error simulado al invalidar", response.getBody().message());
     }
 }
