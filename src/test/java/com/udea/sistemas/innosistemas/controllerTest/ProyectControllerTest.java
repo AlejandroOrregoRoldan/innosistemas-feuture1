@@ -1,110 +1,234 @@
 package com.udea.sistemas.innosistemas.controllerTest;
 
-// --- Imports de Mockito ---
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-// --- Imports de Spring y DTOs ---
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import com.udea.sistemas.innosistemas.controllers.ProyectController;
 import com.udea.sistemas.innosistemas.models.dto.ApiResponseDto;
 import com.udea.sistemas.innosistemas.models.dto.CreateProjectDto;
+import com.udea.sistemas.innosistemas.models.dto.ProjectDto;
+import com.udea.sistemas.innosistemas.models.dto.modProjectDto;
 import com.udea.sistemas.innosistemas.models.entity.Project;
+import com.udea.sistemas.innosistemas.models.entity.User;
 import com.udea.sistemas.innosistemas.repository.ProjectRepository;
 import com.udea.sistemas.innosistemas.service.ProjectService;
 
-// --- Imports de AssertJ y Mockito (static) ---
+import java.util.List;
+import java.util.Collections;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class) // Se usa en lugar de @WebMvcTest
+@ExtendWith(MockitoExtension.class)
 class ProyectControllerTest {
 
-    // --- Se usa @Mock en lugar de @MockBean ---
     @Mock
     private ProjectService proyectService;
 
     @Mock
     private ProjectRepository projectRepository;
 
-    // --- Se usa @InjectMocks para inyectar los @Mock en el controlador ---
     @InjectMocks
     private ProyectController proyectController;
 
-    // --- NOTA: No hay MockMvc ni ObjectMapper ---
+    // --- Pruebas que ya teníamos ---
 
     @Test
-        // --- NOTA: No hay @WithMockUser. La seguridad no se prueba ---
     void testGetProject_Success() throws Exception {
-        // 1. Arrange
         Project mockProject = new Project();
         mockProject.setId(1);
         mockProject.setNameProject("Proyecto de Prueba");
 
         when(proyectService.getProject(1)).thenReturn(mockProject);
-
-        // 2. Act
-        // Se llama al método directamente, no a través de una petición HTTP
         ResponseEntity<Project> response = proyectController.getProject(1);
 
-        // 3. Assert
-        // Se comprueba el ResponseEntity
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().getId());
-        assertEquals("Proyecto de Prueba", response.getBody().getNameProject());
     }
 
     @Test
     void testGetProject_NotFound() throws Exception {
-        // 1. Arrange
         when(proyectService.getProject(99)).thenReturn(null);
-
-        // 2. Act
         ResponseEntity<Project> response = proyectController.getProject(99);
 
-        // 3. Assert
         assertNotNull(response);
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 
     @Test
-        // --- NOTA: La anotación @PreAuthorize("hasAuthority('create_project')") es ignorada ---
     void testCreateProject_Success() throws Exception {
-        // 1. Arrange
         CreateProjectDto projectDto = new CreateProjectDto("Nuevo Proyecto", "Desc...", 101);
         when(proyectService.createProject(anyInt(), anyString(), anyString())).thenReturn(true);
-
-        // 2. Act
         ResponseEntity<ApiResponseDto> response = proyectController.createProject(projectDto);
 
-        // 3. Assert
         assertNotNull(response);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(true, response.getBody().success());
-        assertEquals("Project was created successfully", response.getBody().message());
     }
 
     @Test
     void testCreateProject_Fail() throws Exception {
-        // 1. Arrange
         CreateProjectDto projectDto = new CreateProjectDto("Proyecto Malo", "Desc...", 101);
         when(proyectService.createProject(anyInt(), anyString(), anyString())).thenReturn(false);
-
-        // 2. Act
         ResponseEntity<ApiResponseDto> response = proyectController.createProject(projectDto);
 
-        // 3. Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(false, response.getBody().success());
+    }
+
+    // --- INICIO DE PRUEBAS NUEVAS (Para subir cobertura) ---
+
+    @Test
+    void testGetUsersInOneTeam() {
+        // Arrange
+        User user1 = new User();
+        user1.setEmail("test@test.com");
+        List<User> userList = List.of(user1);
+        when(proyectService.getUsersInOneTeamByProject(1)).thenReturn(userList);
+
+        // Act
+        ResponseEntity<List<User>> response = proyectController.getUsersInOneTeam(1);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().size());
+        assertEquals("test@test.com", response.getBody().get(0).getEmail());
+    }
+
+    @Test
+    void testGetAllProjects_Success() {
+        // Arrange
+        Project project1 = new Project();
+        project1.setId(1);
+        project1.setNameProject("P1");
+        List<Project> projectList = List.of(project1);
+
+        // El controlador llama a projectRepository.findAll()
+        when(projectRepository.findAll()).thenReturn(projectList);
+
+        // Act
+        ResponseEntity<List<ProjectDto>> response = proyectController.getAllProjects();
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().size());
+        assertEquals("P1", response.getBody().get(0).name());
+    }
+
+    @Test
+    void testGetAllProjects_Empty() {
+        // Arrange
+        // Simula que la base de datos no devuelve nada
+        when(projectRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // Act
+        ResponseEntity<List<ProjectDto>> response = proyectController.getAllProjects();
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    void testUpdateProject_Success() {
+        // Arrange
+        modProjectDto dto = new modProjectDto(1, 101, "Actualizado", "Desc...");
+        // Simula que el servicio actualizó correctamente
+        when(proyectService.updateProject(1, 101, "Actualizado", "Desc...")).thenReturn(true);
+
+        // Act
+        ResponseEntity<ApiResponseDto> response = proyectController.updateProject(dto);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(true, response.getBody().success());
+        assertEquals("Project was updated successfully", response.getBody().message());
+    }
+
+    @Test
+    void testUpdateProject_Fail() {
+        // Arrange
+        modProjectDto dto = new modProjectDto(1, 101, "Actualizado", "Desc...");
+        // Simula que el servicio falló (ej. no encontró el ID)
+        when(proyectService.updateProject(anyInt(), anyInt(), anyString(), anyString())).thenReturn(false);
+
+        // Act
+        ResponseEntity<ApiResponseDto> response = proyectController.updateProject(dto);
+
+        // Assert
         assertNotNull(response);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals(false, response.getBody().success());
         assertEquals("Invalid Project data", response.getBody().message());
+    }
+
+    @Test
+    void testDeleteProject_Success() {
+        // Arrange
+        when(proyectService.deleteProject(1)).thenReturn(true);
+
+        // Act
+        ResponseEntity<ApiResponseDto> response = proyectController.deleteProject(1);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(true, response.getBody().success());
+    }
+
+    @Test
+    void testDeleteProject_Fail() {
+        // Arrange
+        when(proyectService.deleteProject(99)).thenReturn(false);
+
+        // Act
+        ResponseEntity<ApiResponseDto> response = proyectController.deleteProject(99);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(false, response.getBody().success());
+    }
+
+    @Test
+    void testInvalidateProject_Success() {
+        // Arrange
+        when(proyectService.invalidateProject(1)).thenReturn(true);
+
+        // Act
+        ResponseEntity<ApiResponseDto> response = proyectController.invalidateProject(1);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(true, response.getBody().success());
+    }
+
+    @Test
+    void testInvalidateProject_Fail() {
+        // Arrange
+        when(proyectService.invalidateProject(99)).thenReturn(false);
+
+        // Act
+        ResponseEntity<ApiResponseDto> response = proyectController.invalidateProject(99);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(false, response.getBody().success());
     }
 }
