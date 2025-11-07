@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Service
 public class RefreshTokenService {
-    
+
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtConfig jwtConfig;
 
@@ -25,8 +25,8 @@ public class RefreshTokenService {
     @Transactional
     public void deactivateAllTokensByUserEmail(String userEmail) {
         List<RefreshToken> activeTokens = refreshTokenRepository
-            .findByUserEmailAndIsExpiredFalse(userEmail);
-        
+                .findByUserEmailAndIsExpiredFalse(userEmail);
+
         activeTokens.forEach(token -> token.setIsExpired(true));
 
         refreshTokenRepository.saveAll(activeTokens);
@@ -35,14 +35,14 @@ public class RefreshTokenService {
     @Transactional
     public int invalidateUserTokensForLogout(String userEmail) {
         List<RefreshToken> activeTokens = refreshTokenRepository
-            .findByUserEmailAndIsExpiredFalse(userEmail);
-        
+                .findByUserEmailAndIsExpiredFalse(userEmail);
+
         System.out.println("Found " + activeTokens.size() + " active tokens for logout: " + userEmail);
-        
+
         if (activeTokens.isEmpty()) {
             return 0;
         }
-        
+
         // Modificar y guardar cada token individualmente
         for (RefreshToken token : activeTokens) {
             System.out.println("Expiring token: " + token.getToken());
@@ -57,8 +57,8 @@ public class RefreshTokenService {
     @Transactional
     public void deleteExpiredTokens(LocalDateTime now) {
         List<RefreshToken> expiredTokens = refreshTokenRepository
-            .findByExpiresAtBefore(now);
-        
+                .findByExpiresAtBefore(now);
+
         refreshTokenRepository.deleteAll(expiredTokens);
     }
 
@@ -66,11 +66,11 @@ public class RefreshTokenService {
     public RefreshToken createRefreshToken(String userEmail) {
         // Desactivar tokens anteriores del usuario
         deactivateAllTokensByUserEmail(userEmail);
-        
+
         // Crear nuevo token
         String token = UUID.randomUUID().toString();
         LocalDateTime expiryDate = LocalDateTime.now().plusSeconds(jwtConfig.getRefreshTokenExpiration());
-        
+
         RefreshToken refreshToken = new RefreshToken(token, userEmail, expiryDate);
         return refreshTokenRepository.save(refreshToken);
     }
