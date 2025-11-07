@@ -40,7 +40,7 @@ class ProyectControllerTest {
     @InjectMocks
     private ProyectController proyectController;
 
-    // --- Pruebas que ya teníamos ---
+    // --- Pruebas de cobertura de lógica principal (77.8%) ---
 
     @Test
     void testGetProject_Success() throws Exception {
@@ -87,8 +87,6 @@ class ProyectControllerTest {
         assertEquals(false, response.getBody().success());
     }
 
-    // --- INICIO DE PRUEBAS NUEVAS (Para subir cobertura) ---
-
     @Test
     void testGetUsersInOneTeam() {
         // Arrange
@@ -115,7 +113,6 @@ class ProyectControllerTest {
         project1.setNameProject("P1");
         List<Project> projectList = List.of(project1);
 
-        // El controlador llama a projectRepository.findAll()
         when(projectRepository.findAll()).thenReturn(projectList);
 
         // Act
@@ -131,7 +128,6 @@ class ProyectControllerTest {
     @Test
     void testGetAllProjects_Empty() {
         // Arrange
-        // Simula que la base de datos no devuelve nada
         when(projectRepository.findAll()).thenReturn(Collections.emptyList());
 
         // Act
@@ -146,7 +142,6 @@ class ProyectControllerTest {
     void testUpdateProject_Success() {
         // Arrange
         modProjectDto dto = new modProjectDto(1, 101, "Actualizado", "Desc...");
-        // Simula que el servicio actualizó correctamente
         when(proyectService.updateProject(1, 101, "Actualizado", "Desc...")).thenReturn(true);
 
         // Act
@@ -163,7 +158,6 @@ class ProyectControllerTest {
     void testUpdateProject_Fail() {
         // Arrange
         modProjectDto dto = new modProjectDto(1, 101, "Actualizado", "Desc...");
-        // Simula que el servicio falló (ej. no encontró el ID)
         when(proyectService.updateProject(anyInt(), anyInt(), anyString(), anyString())).thenReturn(false);
 
         // Act
@@ -231,14 +225,16 @@ class ProyectControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals(false, response.getBody().success());
     }
+
+    // --- INICIO DE PRUEBAS DE EXCEPCIÓN (Para > 80%) ---
+
     @Test
     void testGetAllProjects_Exception() {
         // Arrange
-        // Simula un error de base de datos (ej. la BD está caída)
+        // Simula un error de base de datos
         when(projectRepository.findAll()).thenThrow(new RuntimeException("Error simulado de BD"));
 
         // Act
-        // Llama al método que contiene el try...catch
         ResponseEntity<List<ProjectDto>> response = proyectController.getAllProjects();
 
         // Assert
@@ -265,5 +261,20 @@ class ProyectControllerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals(false, response.getBody().success());
         assertEquals("Error creating project: Error simulado de servicio", response.getBody().message());
+    }
+
+    @Test
+    void testGetProject_Exception() {
+        // Arrange
+        // Simula un error al buscar un proyecto
+        when(proyectService.getProject(1)).thenThrow(new RuntimeException("Error simulado de servicio"));
+
+        // Act
+        ResponseEntity<Project> response = proyectController.getProject(1);
+
+        // Assert
+        // Verifica que el catch funcionó
+        assertNotNull(response);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 }
