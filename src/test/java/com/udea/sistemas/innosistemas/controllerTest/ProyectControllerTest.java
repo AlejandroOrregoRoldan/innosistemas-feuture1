@@ -231,4 +231,39 @@ class ProyectControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals(false, response.getBody().success());
     }
+    @Test
+    void testGetAllProjects_Exception() {
+        // Arrange
+        // Simula un error de base de datos (ej. la BD está caída)
+        when(projectRepository.findAll()).thenThrow(new RuntimeException("Error simulado de BD"));
+
+        // Act
+        // Llama al método que contiene el try...catch
+        ResponseEntity<List<ProjectDto>> response = proyectController.getAllProjects();
+
+        // Assert
+        // Verifica que el catch funcionó y devolvió un INTERNAL_SERVER_ERROR
+        assertNotNull(response);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    void testCreateProject_Exception() {
+        // Arrange
+        CreateProjectDto projectDto = new CreateProjectDto("Proyecto Excepcion", "Desc...", 101);
+
+        // Simula un error inesperado en la lógica del servicio
+        when(proyectService.createProject(anyInt(), anyString(), anyString()))
+                .thenThrow(new RuntimeException("Error simulado de servicio"));
+
+        // Act
+        ResponseEntity<ApiResponseDto> response = proyectController.createProject(projectDto);
+
+        // Assert
+        // Verifica que el catch funcionó y devolvió el DTO de error
+        assertNotNull(response);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals(false, response.getBody().success());
+        assertEquals("Error creating project: Error simulado de servicio", response.getBody().message());
+    }
 }
